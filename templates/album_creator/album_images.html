@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+
+{% block content %}
+    <div class="row">
+
+        <div class="col-lg-12">
+            <h1 class="page-header">{{ album_name }}</h1>
+            {% if user_can_import %}
+                <p>
+                    <a href="{% url 'album-import-photos' album_name=album_name %}" class="btn btn-info">Import new photos</a>
+                </p>
+            {% endif %}
+        </div>
+
+        {% for photo in object_list %}
+            <div class="col-lg-3 col-md-4 col-xs-6 thumb">
+                <div class="albm-photo-creator-image">
+                    {% thumbnail photo.image.image_file 400x300 crop=True as photo_thumbnail %}
+                    <a class="thumbnail" href="{{ photo.tweet_url }}">
+                        <img class="img-responsive" src="{{ photo_thumbnail.url }}" alt="{{ photo.tweet_url }}">
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% include 'includes/pagination.html' %}
+
+    </div>
+{% endblock %}
+

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block page_title %}Photo albums{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Photo albums
+                <small>based on twitter hash tags</small>
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        {% for album in object_list %}
+            {% if forloop.counter0|divisibleby:3 %}
+                </div>
+                <div class="row">
+            {% endif %}
+                <div class="col-md-4 portfolio-item">
+                {% with album.images.all.0 as first_image %}
+                    {% if first_image %}
+                        {% thumbnail first_image.image_file 400x300 crop=True as photo_thumbnail %}
+                        <a href="{% url 'album-detail' album_name=album.name %}">
+                            <img class="img-responsive" src="{{ photo_thumbnail.url }}" alt="{{ album.name }}">
+                        </a>
+                    {% endif %}
+                {% endwith %}
+                    <h3>
+                        <a href="{% url 'album-detail' album_name=album.name %}">{{ album.name }} <span class="badge">{{ album.images.count }}</span></a>
+                    </h3>
+                </div>
+        {% endfor %}
+    </div>
+
+    {% include 'includes/pagination.html' %}
+
+{% endblock %}

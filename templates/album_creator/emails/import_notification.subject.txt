@@ -1,0 +1,1 @@
+{{ number_of_photos }} new photo(s) has been imported for album {{ album_name }}
