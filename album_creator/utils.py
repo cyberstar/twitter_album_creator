@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 from twython import Twython
 import requests
 
@@ -11,9 +12,21 @@ from django.core.files import File
 TWEET_URL_TEMPLATE = "https://twitter.com/{user_name}/status/{tweet_id}/"
 
 
-def get_twitter(credentials):
+def get_credentials_from_file(file_path):
     """
-    Returns authenticated api t.
+    Returns a dict with twitter api credentials. Reads them from json file.
+    :param file_path: str absolute path to credentials file
+    :return: dict with credentials
+    """
+    # since this operation requires disk access it can be optimized
+    # with cache/memoization, should not be an issue for small projects
+    with open(file_path, 'rb') as credentials_file:
+        return json.load(credentials_file)
+
+
+def get_twitter_api(credentials):
+    """
+    Returns authenticated api to twitter.
     :param credentials: dict with credentials, expected to be as following:
         'app_key' - Consumer Key (API Key)
         'app_secret' - Consumer Secret (API Secret)

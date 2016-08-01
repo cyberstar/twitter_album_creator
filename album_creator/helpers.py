@@ -3,6 +3,10 @@ from __future__ import unicode_literals
 
 import logging
 
+from django.core.mail import send_mass_mail
+from django.template.loader import render_to_string
+from django.contrib.sites.models import Site
+
 from .models import Album, AlbumImageRelation, Image
 from .utils import (
     search_tweets_by_hashtag, get_image_url_from_tweet,
@@ -18,7 +22,8 @@ def import_photo_from_tweet(tweet, album_instance):
     Import a single photo from a single tweet data (received with twitter api).
     :param tweet: dict tweet data.
     :param album_instance: .models.Album instance
-    :return: int, 0 if nothing was imported, 1 in case of successful import
+    :return: int or None, None if nothing was imported, image_instance.pk in case of
+    successful import
     """
     tweet_id = get_tweet_id(tweet)
     tweet_url = get_tweet_url(tweet)
@@ -27,19 +32,19 @@ def import_photo_from_tweet(tweet, album_instance):
     # check that we have image url
     if image_url is None:
         logger.debug('Skipping: No image_url found for tweet {}'.format(tweet_url))
-        return 0
+        return None
 
     # validate uniqueness
     album_image_relation = AlbumImageRelation.objects.filter(album=album_instance, image__image_url=image_url)
     if album_image_relation.exists():
         logger.debug('Skipping duplicate image entry for tweet {}'.format(tweet_url))
-        return 0
+        return None
     # check if we need to fetch an image
     try:
         image_instance = Image.objects.get(image_url=image_url)
         logger.debug(
             'Found existing Image  in the database, (pk={}, url={} '.format(
-                Image.id, image_url))
+                image_instance.id, image_url))
     except Image.DoesNotExist:
         image_instance = None
     # if there is no previously imported image - create one
@@ -54,7 +59,7 @@ def import_photo_from_tweet(tweet, album_instance):
         image=image_instance,
         tweet_id=tweet_id,
         tweet_url=tweet_url)
-    return 1
+    return image_instance.pk
 
 
 def import_photos_for_album(api, album_name, limit=100):
@@ -118,10 +123,70 @@ def import_photos_for_album(api, album_name, limit=100):
         len(search_results)))
 
     # Process the search results
-    successful_imports_count = 0
+    successful_imports_pks = []
     for tweet in search_results:
-        successful_imports_count += import_photo_from_tweet(tweet, album_instance=album_instance)
+        image_pk = import_photo_from_tweet(tweet, album_instance=album_instance)
+        if image_pk is not None:
+            successful_imports_pks.append(image_pk)
 
     logger.debug('Successfully imported {} photo(s)'.format(
-        successful_imports_count))
-    return successful_imports_count
+        len(successful_imports_pks)))
+    logger.debug('Imported photos pks: \n{}'.format(
+        '\n'.join(str(pk) for pk in successful_imports_pks)
+    ))
+    return successful_imports_pks
+
+
+def construct_notification_emails(subject_template_name, body_template_name,
+                                  album_name, photo_pks_list, from_email,
+                                  recipients):
+    """
+    Construct email messages to notify recipients about import results.
+    :param subject_template_name: str path to subject template
+    :param body_template_name: str path to body template
+    :param album_name: str name of the album, will be refrlected in the subject
+    :param photo_pks_list: list of photo pks to build urls
+    :param from_email: str email address to be used in from_email field
+    :param recipients: str recipients
+    :return: list of tuples suitable for usage in send_mass_email
+    """
+    photos = Image.objects.filter(pk__in=photo_pks_list)
+    album = Album.objects.get(name=album_name)
+    site = Site.objects.get_current()
+    context_dict = {
+        'photos': photos,
+        'album_name': album_name,
+        'album_total_photos_count': album.images.count(),
+        'number_of_photos': len(photos),
+        'album_url': 'http://{}{}'.format(site.domain,
+                                          album.get_absolute_url()),
+    }
+    subject = render_to_string(subject_template_name, context=context_dict)
+    # clean the subject, must be one line
+    subject = subject.replace('\n', '').replace('\r', '').strip()
+    body = render_to_string(body_template_name, context_dict)
+    prepared_data = [(subject, body, from_email, (to_email,)) for to_email in recipients]
+    return prepared_data
+
+
+def send_email_notifications(subject_template_name, body_template_name,
+                             album_name, photo_pks_list, from_email, recipients):
+    """
+    Constructs and sends import email notifications to recipients.
+    :param subject_template_name: str path to subject template
+    :param body_template_name: str path to body template
+    :param album_name: str name of the album, will be refrlected in the subject
+    :param photo_pks_list: list of photo pks to build urls
+    :param from_email: str email address to be used in from_email field
+    :param recipients: str recipients
+    :return: number of sent emails
+    """
+    data = construct_notification_emails(
+        subject_template_name=subject_template_name,
+        body_template_name=body_template_name,
+        album_name=album_name,
+        photo_pks_list=photo_pks_list,
+        from_email=from_email,
+        recipients=recipients,
+    )
+    return send_mass_mail(data)

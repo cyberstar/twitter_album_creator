@@ -19,6 +19,15 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# path to default twitter credentials json file
+TWITTER_CREDENTIALS_JSON_FILE = os.path.join(BASE_DIR, 'default_twitter_credentials.json')
+
+MANAGERS = [
+    ('Kyrylo Kniazev', 'test@example.com'),
+    ('Another Manager', 'another@example.com'),
+]
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -28,6 +37,7 @@ SECRET_KEY = '@)w-+8mnx8)28j3#dszvd838)s2b287$34e$_7&=@q=y40*qe%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+SITE_ID = 1
 ALLOWED_HOSTS = []
 
 
@@ -40,8 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # 3rd party
+    'easy_thumbnails',
+    'bootstrap3',
 
     # project
     'core',
@@ -130,7 +143,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LOGGING = {
     'version': 1,
@@ -146,6 +161,10 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'helpers_debug.log'),
         },
+        'import_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
@@ -154,7 +173,7 @@ LOGGING = {
             'propagate': True,
         },
         'album_creator.helpers': {
-            'handlers': ['import_file'],
+            'handlers': ['import_console', 'import_file'],
             'level': 'DEBUG',
             'propagate': True,
         },
