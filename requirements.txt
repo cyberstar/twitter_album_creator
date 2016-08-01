@@ -1,0 +1,9 @@
+backports.shutil-get-terminal-size==1.0.0
+Django==1.9.8
+django-bootstrap3==7.0.1
+easy-thumbnails==2.3
+oauthlib==1.1.2
+Pillow==3.3.0
+requests==2.10.0
+requests-oauthlib==0.6.2
+twython==3.4.0
