@@ -1,4 +1,8 @@
 *.pyc
 .idea/*
 *.sqlite3
+*.log
+uploads/*
+media/*
+default_twitter_credentials.json
 
