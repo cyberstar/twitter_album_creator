@@ -71,9 +71,6 @@ class AlbumImageRelation(models.Model):
         verbose_name='Tweet url',
         help_text='Tweet url were the image appeared',
     )
-    notified = models.BooleanField(
-        default=False,
-    )
 
     def __str__(self):
         return force_text(self.pk)
