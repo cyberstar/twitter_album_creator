@@ -9,6 +9,16 @@ from .models import Album, Image, AlbumImageRelation
 class AlbumImageInline(admin.StackedInline):
     model = AlbumImageRelation
     extra = 1
+    fields = (
+        'album',
+        'image',
+        'tweet_id',
+        'tweet_url',
+        'imported_at',
+    )
+    readonly_fields = (
+        'imported_at',
+    )
 
 
 @admin.register(Album)

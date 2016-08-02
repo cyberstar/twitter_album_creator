@@ -71,6 +71,10 @@ class AlbumImageRelation(models.Model):
         verbose_name='Tweet url',
         help_text='Tweet url were the image appeared',
     )
+    imported_at = models.DateTimeField(
+        verbose_name='Image import datetime',
+        auto_now_add=True,
+    )
 
     def __str__(self):
         return force_text(self.pk)
