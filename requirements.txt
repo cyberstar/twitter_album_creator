@@ -1,7 +1,10 @@
 backports.shutil-get-terminal-size==1.0.0
 Django==1.9.8
 django-bootstrap3==7.0.1
+django-filter==0.13.0
+djangorestframework==3.4.1
 easy-thumbnails==2.3
+Markdown==2.6.6
 oauthlib==1.1.2
 Pillow==3.3.0
 requests==2.10.0

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # 3rd party
     'easy_thumbnails',
     'bootstrap3',
+    'rest_framework',
 
     # project
     'core',
