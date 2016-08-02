@@ -43,3 +43,7 @@ To create album you may use the create album link on the top menu or do it from 
 
 After the album is created - navigate to the album details and hit the import button. After a while you will see new
 imported photos and will get the email with updates.
+
+REST API
+^^^^^^^^
+You can retrieve album names and urls to images with REST API by accessing the ``localhost:8000/api/album/`` url.
