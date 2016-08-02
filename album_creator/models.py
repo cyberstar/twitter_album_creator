@@ -11,6 +11,7 @@ class Album(models.Model):
     name = models.CharField(
         verbose_name='Album name',
         max_length=140,
+        unique=True,
         help_text=(
             'Hash tag without the "#" sign, will be used to fetch photos '
             'from twitter'),

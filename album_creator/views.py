@@ -20,7 +20,7 @@ class AlbumsListView(ListView):
     template_name = 'album_creator/album_list.html'
 
 
-class CreateAlbumView(CreateView):
+class CreateAlbumView(LoginRequiredMixin, CreateView):
     model = Album
     fields = ('name',)
     template_name = 'album_creator/create_album.html'

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from tempfile import mkdtemp
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,6 +21,7 @@ STATICFILES_DIRS = (
 )
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+FILE_UPLOAD_TEMP_DIR = mkdtemp()
 
 # path to default twitter credentials json file
 TWITTER_CREDENTIALS_JSON_FILE = os.path.join(BASE_DIR, 'default_twitter_credentials.json')
