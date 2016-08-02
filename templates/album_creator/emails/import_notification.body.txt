@@ -2,7 +2,7 @@ Album {{ album_name }} has {{ album_total_photos_count }} photo(s).
 
 Here are the new ones:
 {% for photo in photos %}
-  {{ photo.image_url }}
+  {{ photo.original_image_url }}
 {% endfor %}
 
 You can check the album at {{ album_url }}

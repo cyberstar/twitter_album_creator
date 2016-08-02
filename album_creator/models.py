@@ -39,13 +39,13 @@ class Image(models.Model):
         help_text='Fetched image file',
         upload_to='uploads/',
     )
-    image_url = models.URLField(
+    original_image_url = models.URLField(
         verbose_name='Original image url',
         unique=True,
     )
 
     def __str__(self):
-        return force_text(self.image_url)
+        return force_text(self.original_image_url)
 
 
 @python_2_unicode_compatible
@@ -64,7 +64,6 @@ class AlbumImageRelation(models.Model):
     )
     tweet_id = models.BigIntegerField(
         verbose_name='Tweet ID',
-        unique=True,
         help_text='Used to track last imported photos',
 
     )

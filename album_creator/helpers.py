@@ -9,7 +9,7 @@ from django.contrib.sites.models import Site
 
 from .models import Album, AlbumImageRelation, Image
 from .utils import (
-    search_tweets_by_hashtag, get_image_url_from_tweet,
+    search_tweets_by_hashtag, get_original_image_url_from_tweet,
     get_tweet_id, get_tweet_url, get_image_from_url,
 )
 
@@ -27,33 +27,33 @@ def import_photo_from_tweet(tweet, album_instance):
     """
     tweet_id = get_tweet_id(tweet)
     tweet_url = get_tweet_url(tweet)
-    image_url = get_image_url_from_tweet(tweet)
+    original_image_url = get_original_image_url_from_tweet(tweet)
 
     # check that we have image url
-    if image_url is None:
-        logger.debug('Skipping: No image_url found for tweet {}'.format(tweet_url))
+    if original_image_url is None:
+        logger.debug('Skipping: No original_image_url found for tweet {}'.format(tweet_url))
         return None
 
     # validate uniqueness
-    album_image_relation = AlbumImageRelation.objects.filter(album=album_instance, image__image_url=image_url)
+    album_image_relation = AlbumImageRelation.objects.filter(album=album_instance, image__original_image_url=original_image_url)
     if album_image_relation.exists():
         logger.debug('Skipping duplicate image entry for tweet {}'.format(tweet_url))
         return None
     # check if we need to fetch an image
     try:
-        image_instance = Image.objects.get(image_url=image_url)
+        image_instance = Image.objects.get(original_image_url=original_image_url)
         logger.debug(
             'Found existing Image  in the database, (pk={}, url={} '.format(
-                image_instance.id, image_url))
+                image_instance.id, original_image_url))
     except Image.DoesNotExist:
         image_instance = None
     # if there is no previously imported image - create one
     if image_instance is None:
-        logger.debug('Fetching the image file from url {}'.format(image_url))
-        image_django_file = get_image_from_url(image_url)
-        logger.debug('Creating new Image entry for url {}'.format(image_url))
+        logger.debug('Fetching the image file from url {}'.format(original_image_url))
+        image_django_file = get_image_from_url(original_image_url)
+        logger.debug('Creating new Image entry for url {}'.format(original_image_url))
         image_instance = Image.objects.create(image_file=image_django_file,
-                                              image_url=image_url)
+                                              original_image_url=original_image_url)
     logger.debug('Creating new Album to Image relation for tweet: {}'.format(tweet_url))
     album_instance.image_relations.create(
         image=image_instance,
@@ -71,7 +71,7 @@ def import_photos_for_album(api, album_name, limit=100):
     :param api: Twython instance, twitter api connection
     :param album_name: str album name - the hash tag without the '#' symbol
     :param limit: int limit twitter search results
-    :return: int number of imported photos
+    :return: list of imported photos pks
     """
     logger.info('Starting import for album name "{}"'.format(album_name))
     try:
@@ -80,7 +80,7 @@ def import_photos_for_album(api, album_name, limit=100):
     except Album.DoesNotExist as e:
         logger.error(
             'No album insatnce found in the database for name {}'.format(album_name))
-        return -1
+        return []
     hash_tag = '#{}'.format(album_name)
     # check if there were previous imports, in case there are - we only
     # need the most latest tweet id.
@@ -128,12 +128,14 @@ def import_photos_for_album(api, album_name, limit=100):
         image_pk = import_photo_from_tweet(tweet, album_instance=album_instance)
         if image_pk is not None:
             successful_imports_pks.append(image_pk)
-
-    logger.debug('Successfully imported {} photo(s)'.format(
-        len(successful_imports_pks)))
-    logger.debug('Imported photos pks: \n{}'.format(
-        '\n'.join(str(pk) for pk in successful_imports_pks)
-    ))
+    # log results
+    if successful_imports_pks:
+        logger.debug('Successfully imported {} photo(s)'.format(
+            len(successful_imports_pks)))
+        logger.debug('Imported images pks: \n{}'.format(
+            str(successful_imports_pks)))
+    else:
+        logger.debug('No new images were imported.')
     return successful_imports_pks
 
 

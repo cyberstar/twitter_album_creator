@@ -45,7 +45,7 @@ def get_twitter_api(credentials):
 
 def get_image_from_url(image_url):
     """
-    Fetch the image from image_url and return Django file object.
+    Fetch the image from original_image_url and return Django file object.
     :param image_url: str absolute url to image
     :return: django.core.files.File
     """
@@ -56,11 +56,11 @@ def get_image_from_url(image_url):
     return file_obj
 
 
-def get_image_url_from_tweet(tweet):
+def get_original_image_url_from_tweet(tweet):
     """
     Extracts the tweet photo image url from tweet data.
     :param tweet: dict of the tweet provided by twitter API
-    :return: str image url or None in case if something went wrong
+    :return: str original image url or None in case if something went wrong
     """
     entities = tweet.get('entities', {})
     media_entities = entities.get('media', [])

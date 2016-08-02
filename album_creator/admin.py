@@ -24,4 +24,4 @@ class AlbumAdmin(admin.ModelAdmin):
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     inlines = (AlbumImageInline, )
-    fields = ('image_file', 'image_url', )
+    fields = ('image_file', 'original_image_url', )
